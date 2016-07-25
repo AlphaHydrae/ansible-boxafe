@@ -1,0 +1,5 @@
+---
+boxafe_user: "{{ user }}"
+boxafe_group: "{{ group | default(boxafe_user) }}"
+boxafe_user_home: "{{ host_user_homes }}/{{ boxafe_user }}"
+boxafe_env_file: "{{ boxafe_user_home }}/.env"
