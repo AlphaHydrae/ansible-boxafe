@@ -1,44 +1,53 @@
 ---
 
-- name: Tap caskroom/cask and homebrew/fuse
-  homebrew_tap: name={{ item }} state=present
+- name: Tap homebrew/fuse (Homebrew)
+  homebrew_tap: name=homebrew/fuse state=present
   become: true
-  become_user: "{{ boxafe_user }}"
-  with_items:
-    - caskroom/cask # TODO: create role for homebrew cask
-    - homebrew/fuse
+  become_user: "{{ boxafe_homebrew_user }}"
+  tags:
+    - boxafe
   when: ansible_pkg_mgr == 'homebrew'
 - name: brew cask install osxfuse
   homebrew_cask: name=osxfuse state=present
   become: true
-  become_user: "{{ boxafe_user }}"
+  become_user: "{{ boxafe_homebrew_user }}"
+  tags:
+    - boxafe
   when: ansible_pkg_mgr == 'homebrew'
 - name: brew install encfs
   homebrew: name=encfs state=installed
   become: true
-  become_user: "{{ boxafe_user }}"
+  become_user: "{{ boxafe_homebrew_user }}"
+  tags:
+    - boxafe
   when: ansible_pkg_mgr == 'homebrew'
 - name: Install boxafe gem
   command: su - {{ boxafe_user }} -c "cd && source .rvm/scripts/rvm && gem install --no-rdoc --no-ri boxafe" creates="{{ boxafe_user_home }}/.rvm/gems/ruby-{{ rvm_ruby_version }}/bin/boxafe"
+  tags:
+    - boxafe
+
+# Other package managers
+- fail: msg="{{ ansible_pkg_mgr }} is not a supported package manager (Homebrew is supported)"
+  when: ansible_pkg_mgr != 'homebrew'
 
 # TODO: extract into separate role
-- name: Ensure boxafe name is in environment file
-  lineinfile: line="BOXAFE_NAME=\"{{ boxafe_name }}\"" dest="{{ boxafe_env_file }}" state=present create=yes group={{ boxafe_group }} owner={{ boxafe_user }} mode=0600
-- name: Ensure boxafe root is in environment file
-  lineinfile: line="BOXAFE_ROOT=\"{{ boxafe_root }}\"" dest="{{ boxafe_env_file }}" state=present create=yes group={{ boxafe_group }} owner={{ boxafe_user }} mode=0600
-- name: Ensure boxafe EncFS config is in environment file
-  lineinfile: line="BOXAFE_ENCFS_CONFIG=\"~/{{ boxafe_encfs_config }}\"" dest="{{ boxafe_env_file }}" state=present create=yes group={{ boxafe_group }} owner={{ boxafe_user }} mode=0600
-- name: Ensure boxafe password file is in environment file
-  lineinfile: line="BOXAFE_PASSWORD_FILE=\"~/{{ boxafe_password_file }}\"" dest="{{ boxafe_env_file }}" state=present create=yes group={{ boxafe_group }} owner={{ boxafe_user }} mode=0600
-- name: Ensure EncFS config file permissions
-  file: path="{{ boxafe_user_home }}/{{ boxafe_encfs_config }}" group={{ boxafe_group }} owner={{ boxafe_user }} mode=0400
-- name: Ensure box password file permissions
-  file: path="{{ boxafe_user_home }}/{{ boxafe_password_file }}" group={{ boxafe_group }} owner={{ boxafe_user }} mode=0400
-- name: Ensure boxafe configuration
-  file: path="{{ boxafe_user_home }}/.boxafe.rb" src="{{ boxafe_config }}" state=link
-- name: Mount boxafe
-  command: su - {{ boxafe_user }} -c "cd && export PATH=/opt/local/bin:$PATH && source .rvm/scripts/rvm && rvm use {{ rvm_ruby_version }} && boxafe mount" creates=/Volumes/{{ boxafe_name }}
-- name: Link box
-  file: path="{{ boxafe_user_home }}/{{ boxafe_name }}" src="/Volumes/{{ boxafe_name }}" state=link
-- name: Mount boxafe on startup
-  command: su - {{ boxafe_user }} -c "cd && source .rvm/scripts/rvm && boxafe start" creates="{{ boxafe_user_home }}/Library/LaunchAgents/com.alphahydrae.boxafe.plist"
+#- name: Ensure boxafe name is in environment file
+#  lineinfile: line="BOXAFE_NAME=\"{{ boxafe_name }}\"" dest="{{ boxafe_env_file }}" state=present create=yes group={{ boxafe_group }} owner={{ boxafe_user }} mode=0600
+#- name: Ensure boxafe root is in environment file
+#  lineinfile: line="BOXAFE_ROOT=\"{{ boxafe_root }}\"" dest="{{ boxafe_env_file }}" state=present create=yes group={{ boxafe_group }} owner={{ boxafe_user }} mode=0600
+#- name: Ensure boxafe EncFS config is in environment file
+#  lineinfile: line="BOXAFE_ENCFS_CONFIG=\"~/{{ boxafe_encfs_config }}\"" dest="{{ boxafe_env_file }}" state=present create=yes group={{ boxafe_group }} owner={{ boxafe_user }} mode=0600
+#- name: Ensure boxafe password file is in environment file
+#  lineinfile: line="BOXAFE_PASSWORD_FILE=\"~/{{ boxafe_password_file }}\"" dest="{{ boxafe_env_file }}" state=present create=yes group={{ boxafe_group }} owner={{ boxafe_user }} mode=0601
+#- name: Ensure EncFS config file permissions
+#  file: path="{{ boxafe_user_home }}/{{ boxafe_encfs_config }}" group={{ boxafe_group }} owner={{ boxafe_user }} mode=0400
+#- name: Ensure box password file permissions
+#  file: path="{{ boxafe_user_home }}/{{ boxafe_password_file }}" group={{ boxafe_group }} owner={{ boxafe_user }} mode=0400
+#- name: Ensure boxafe configuration
+#  file: path="{{ boxafe_user_home }}/.boxafe.rb" src="{{ boxafe_config }}" state=link
+#- name: Mount boxafe
+#  command: su - {{ boxafe_user }} -c "cd && export PATH=/opt/local/bin:$PATH && source .rvm/scripts/rvm && rvm use {{ rvm_ruby_version }} && boxafe mount" creates=/Volumes/{{ boxafe_name }}
+#- name: Link box
+#  file: path="{{ boxafe_user_home }}/{{ boxafe_name }}" src="/Volumes/{{ boxafe_name }}" state=link
+#- name: Mount boxafe on startup
+#  command: su - {{ boxafe_user }} -c "cd && source .rvm/scripts/rvm && boxafe start" creates="{{ boxafe_user_home }}/Library/LaunchAgents/com.alphahydrae.boxafe.plist"
