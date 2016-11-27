@@ -15,3 +15,6 @@ galaxy_info:
 dependencies:
   - role: AlphaHydrae.multipass
   - role: AlphaHydrae.homebrew-cask
+  - role: AlphaHydrae.rbenv-gems
+    rbenv_gems:
+      - name: boxafe
