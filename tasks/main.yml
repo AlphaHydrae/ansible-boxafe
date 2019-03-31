@@ -1,12 +1,5 @@
 ---
 
-- name: Tap homebrew/fuse (Homebrew)
-  homebrew_tap: name=homebrew/fuse state=present
-  become: true
-  become_user: "{{ boxafe_homebrew_user }}"
-  tags:
-    - boxafe
-  when: ansible_pkg_mgr == 'homebrew'
 - name: brew cask install osxfuse
   homebrew_cask: name=osxfuse state=present
   become: true
@@ -14,6 +7,7 @@
   tags:
     - boxafe
   when: ansible_pkg_mgr == 'homebrew'
+
 - name: brew install encfs
   homebrew: name=encfs state=installed
   become: true
