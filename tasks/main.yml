@@ -1,7 +1,9 @@
 ---
 
 - name: brew cask install osxfuse
-  homebrew_cask: name=osxfuse state=present
+  homebrew_cask:
+    name: osxfuse
+    state: present
   become: true
   become_user: "{{ boxafe_homebrew_user }}"
   tags:
@@ -9,7 +11,9 @@
   when: ansible_pkg_mgr == 'homebrew'
 
 - name: brew install encfs
-  homebrew: name=encfs state=installed
+  homebrew:
+    name: encfs
+    state: present
   become: true
   become_user: "{{ boxafe_homebrew_user }}"
   tags:
